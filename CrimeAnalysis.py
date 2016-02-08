@@ -5,6 +5,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as matdates
+import datetime
 #Set visualization settings
 pd.set_option('display.mpl_style', 'default')
 pd.set_option('display.width', 4000)
@@ -77,11 +78,17 @@ src_data_sf_df['Period of Time'] = src_data_sf_df['Time'].apply(strip_and_classi
 crimeBytime = pd.DataFrame(src_data_df['Period of Time'].value_counts())
 #Creates horizontal graphic
 crimeBytime.plot(kind='barh')
+plt.title("Crime Incidents in Seattle")
+plt.ylabel("Incidents")
+plt.grid(True)
 
 #Gets period of time in the day with more incidents for San Francisco
 crimeBytimeSF = pd.DataFrame(src_data_sf_df['Period of Time'].value_counts())
 #Creates horizontal graphic
 crimeBytimeSF.plot(kind='barh')
+plt.title("Crime Incidents in San Francisco")
+plt.ylabel("Incidents")
+plt.grid(True)
 
 #Now get the top ten main incidents occured at the time where Seattle has more incidents
 crimeTypeByTime = src_data_df.groupby(['Period of Time','Summarized Offense Description']).size()
@@ -94,6 +101,9 @@ cdf1.loc[cdf1['PeriodOfTime'].isin(['05:00 PM to 08:00 PM'])].sort(['Offenses'],
 mostCommonEveningOffenses=cdf1.loc[cdf1['PeriodOfTime'].isin(['05:00 PM to 08:00 PM'])].sort(['Offenses'], ascending=False)[['OffenseDescription','Offenses']][:10]
 mostCOmmonOffenses=mostCommonEveningOffenses.set_index('OffenseDescription')
 mostCOmmonOffenses.plot(kind='barh')
+plt.title("Most Common Crime Incidents in Seattle from 5PM-8PM")
+plt.ylabel("Incidents")
+plt.grid(True)
 
 #Now get the top ten main incidents occured at the time when San Francisco has more incidents
 crimeTypeByTimeSF = src_data_sf_df.groupby(['Period of Time','Category']).size()
@@ -106,6 +116,10 @@ crimeSFdf1.loc[crimeSFdf1['PeriodOfTime'].isin(['05:00 PM to 08:00 PM'])].sort_v
 mostCommonEveningOffensesSF=crimeSFdf1.loc[crimeSFdf1['PeriodOfTime'].isin(['05:00 PM to 08:00 PM'])].sort_values(['Offenses'], ascending=False)[['OffenseDescription','Offenses']][:10]
 mostCOmmonOffensesSF=mostCommonEveningOffensesSF.set_index('OffenseDescription')
 mostCOmmonOffensesSF.plot(kind='barh')
+plt.title("Most Common Crime Incidents in San Francisco from 5PM-8PM")
+plt.ylabel("Incident Classification")
+plt.xlabel("Incidents")
+plt.grid(True)
 
 #Incidents by Zone in Seattle
 #theft incidents
@@ -118,6 +132,10 @@ mainTheftZones[['Hundred Block Location','Summarized Offense Description','Incid
 mtz=mainTheftZones[['Hundred Block Location','Summarized Offense Description','Incidens']]
 mainTheftZones=mtz.set_index('Hundred Block Location')
 mainTheftZones.plot(kind='barh')
+plt.title("Incidents by Zone in Seattle")
+plt.ylabel("Zone/Street")
+plt.xlabel("Incidents")
+plt.grid(True)
 
 #Incidents by Zone in San Francisco
 #theft incidents
@@ -133,6 +151,10 @@ del top10crimePdDist['OffenseDescription']
 top10crimePdDist.columns = ['PdDistrict - Offense Category', 'Offenses']
 top10crimePdDist.set_index('PdDistrict - Offense Category')
 top10crimePdDist.plot(kind='barh')
+plt.title("Incidents by Zone in San Francisco")
+plt.ylabel("Zone/Street")
+plt.xlabel("Incidents")
+plt.grid(True)
 
 #summer Crime Incidents in Seattle 
 summerCrimedf = src_data_df.loc[src_data_df['Month'].isin([6,7,8])]
@@ -155,15 +177,13 @@ crimebyday['crimedate'] = crimebyday['crimedate'].apply(getfmtdate)
 crimebyday.columns = ['crimedate', 'Incidents']
 plt.style.use('ggplot')
 plt.plot_date(x=crimebyday['crimedate'], y=crimebyday['Incidents'], fmt="b-")
-plt.title("Crime Incidents Day by Day")
+plt.title("Crime Incidents Day by Day in Seattle")
 plt.ylabel("Incidents")
 plt.grid(True)
 
 #summer Crime Incidents in San Francisco
-summerCrimedf = src_data_sf_df.loc[src_data_sf_df['Month'].isin([6,7,8])]
-summerCrime = summerCrimedf.groupby(['Month']).size()
 #Create new column only date
-src_data_sf_df['crimedate'] = src_data_sf_df['Occurred Date or Date Range Start'].apply(getthedate)
+src_data_sf_df['crimedate'] = src_data_sf_df['Date'].apply(getthedate)
 crimebyday = src_data_sf_df.groupby(['crimedate']).size()
 crimebyday = crimebyday.to_frame()	
 crimebyday.reset_index(inplace=True)
@@ -171,8 +191,26 @@ crimebyday['crimedate'] = crimebyday['crimedate'].apply(getfmtdate)
 crimebyday.columns = ['crimedate', 'Incidents']
 plt.style.use('ggplot')
 plt.plot_date(x=crimebyday['crimedate'], y=crimebyday['Incidents'], fmt="b-")
-plt.title("Crime Incidents Day by Day")
+plt.title("Crime Incidents Day by Day in San Francisco")
 plt.ylabel("Incidents")
 plt.grid(True)
 
-#how do incidents vary by time of day? Which incidents are most common in the evening? During what periods of the day are robberies most common?
+#Most common incident by day of the week in Seattle
+def dowbydate(ddate):
+    return datetime.datetime.strptime(ddate, '%m/%d/%Y').strftime('%A')
+src_data_df['DayOfWeek'] = src_data_df['crimedate'].apply(dowbydate)
+crimeByDoW=	src_data_df.groupby(['DayOfWeek','Offense Type']).size()
+cdf=crimeByDoWDF.sort_values(['Incidents'], ascending=False)[:10]
+cdf.plot(kind='barh')
+plt.title("Most Common Incident Day by Day Seattle")
+plt.ylabel("Incident Type")
+plt.grid(True)
+
+#Most common incident by day of the week in San Francisco
+src_data_sf_df['DayOfWeek'] = src_data_sf_df['Date'].apply(dowbydate)
+crimeByDoWDFSF=	src_data_sf_df.groupby(['DayOfWeek','Category']).size()
+cdfsf=crimeByDoWDFSF.sort_values(['Incidents'], ascending=False)[:10]
+cdfsf.plot(kind='barh')
+plt.title("Most Common Incident Day by Day Seattle")
+plt.ylabel("Incident Type")
+plt.grid(True)
