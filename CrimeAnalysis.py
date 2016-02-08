@@ -209,8 +209,11 @@ plt.grid(True)
 #Most common incident by day of the week in San Francisco
 src_data_sf_df['DayOfWeek'] = src_data_sf_df['Date'].apply(dowbydate)
 crimeByDoWDFSF=	src_data_sf_df.groupby(['DayOfWeek','Category']).size()
-cdfsf=crimeByDoWDFSF.sort_values(['Incidents'], ascending=False)[:10]
+cdfsf= pd.DataFrame(crimeByDoWDFSF)
+cdfsf.columns=['Incidents']
+cdfsf=cdfsf.sort_values(['Incidents'], ascending=False)[:10]
+
 cdfsf.plot(kind='barh')
-plt.title("Most Common Incident Day by Day Seattle")
+plt.title("Most Common Incident Day by Day San Francisco")
 plt.ylabel("Incident Type")
 plt.grid(True)
